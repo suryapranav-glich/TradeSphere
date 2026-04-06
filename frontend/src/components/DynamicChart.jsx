@@ -113,7 +113,8 @@ const DynamicChart = ({ chartData, loading, activeQuery }) => {
     if (!data || data.length === 0) return;
     try {
       setSummarizing(true);
-      const res = await fetch('http://localhost:8000/api/insights', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${API_BASE}/api/insights`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query: 'Summarize this visual data and describe what key action can be taken from it.', data_context: JSON.stringify(data.slice(0, 15)) })

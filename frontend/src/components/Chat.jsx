@@ -26,7 +26,8 @@ const Chat = ({ onQuery, loading }) => {
     
     // First check with chat API if query is relevant
     try {
-      const chatRes = await fetch('http://localhost:8000/api/chat', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const chatRes = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
@@ -59,7 +60,8 @@ const Chat = ({ onQuery, loading }) => {
       const history = messages.map(m => `${m.role}: ${m.text}`).join('\n');
       setMessages(prev => [...prev, { role: 'user', text: 'Please summarize our chat so far.' }]);
       try {
-          const res = await fetch('http://localhost:8000/api/insights', {
+          const API_BASE2 = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          const res = await fetch(`${API_BASE2}/api/insights`, {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify({ query: 'Summarize this conversation: ' + history.substring(0, 1000) })

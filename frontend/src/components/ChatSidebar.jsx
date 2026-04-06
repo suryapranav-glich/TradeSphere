@@ -22,7 +22,8 @@ const ChatSidebar = ({ onQuery }) => {
     setTyping(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: q }) });
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${API_BASE}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: q }) });
       const data = await res.json();
       setMessages(prev => [...prev, { id: Date.now(), type: 'ai', text: data.reply || "I couldn't process that." }]);
 
