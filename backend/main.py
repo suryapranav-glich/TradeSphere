@@ -49,21 +49,40 @@ COLORS  = ["#6c63ff", "#00d4ff", "#ff6b6b", "#ffd93d", "#6bcb77", "#ff922b"]
 
 # ── Auto-generate DB on startup if missing (for Render deployment) ─────────────
 def _ensure_database() -> None:
-    """Build the SQLite DB from the committed CSV if the DB file is absent."""
+    """Build the SQLite DB from the committed CSV if the campaigns table is absent or empty."""
+    table_ok = False
     if os.path.exists(DB_PATH):
-        print("[DB] marketing_campaigns.db found — ready.")
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cur  = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM campaigns LIMIT 1")
+            count = cur.fetchone()[0]
+            conn.close()
+            if count > 0:
+                print(f"[DB] campaigns table ready — {count} rows.")
+                table_ok = True
+        except Exception:
+            print("[DB] DB file exists but campaigns table missing/empty — regenerating...")
+
+    if table_ok:
         return
-    print("[DB] Database missing — generating from CSV...")
+
+    print("[DB] Generating database from CSV...")
+    # Search for the CSV relative to this file's location and CWD
+    this_dir = os.path.dirname(os.path.abspath(__file__))
     candidates = [
+        os.path.join(this_dir, "..", "Nykaa_Digital_Marketing_Clean.csv.csv"),
+        os.path.join(this_dir, "..", "Nykaa_Digital_Marketing_Clean.csv"),
+        os.path.join(this_dir, "Nykaa_Digital_Marketing_Clean.csv.csv"),
         "../Nykaa_Digital_Marketing_Clean.csv.csv",
         "Nykaa_Digital_Marketing_Clean.csv.csv",
-        "../Nykaa_Digital_Marketing_Clean.csv",
-        "Nykaa_Digital_Marketing_Clean.csv",
     ]
-    csv_path = next((c for c in candidates if os.path.exists(c)), None)
+    csv_path = next((os.path.abspath(c) for c in candidates if os.path.exists(c)), None)
     if not csv_path:
-        print("[DB] WARNING: CSV file not found — starting without data.")
+        print("[DB] WARNING: CSV not found — backend starts without data.")
+        print(f"[DB] Searched: {[os.path.abspath(c) for c in candidates]}")
         return
+    print(f"[DB] Found CSV at: {csv_path}")
     try:
         from generate_data import ingest_real_data
         ingest_real_data(csv_filename=csv_path)
@@ -72,6 +91,7 @@ def _ensure_database() -> None:
         print(f"[DB] ERROR generating database: {exc}")
 
 _ensure_database()
+
 
 MONTH_MAP = {
     "january": "01", "february": "02", "march": "03", "april": "04",
