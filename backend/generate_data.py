@@ -99,7 +99,7 @@ def _derive_dates(n: int) -> pd.Series:
 
 def _normalise_date_column(series: pd.Series) -> pd.Series:
     """Parse any date format and return DD-MM-YYYY strings."""
-    parsed = pd.to_datetime(series, infer_datetime_format=True, errors="coerce")
+    parsed = pd.to_datetime(series, errors="coerce")
     return parsed.dt.strftime("%d-%m-%Y").fillna("01-01-2025")
 
 
