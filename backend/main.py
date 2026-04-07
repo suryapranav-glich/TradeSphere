@@ -31,7 +31,7 @@ api_key = os.getenv("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
 
-SQL_MODEL     = "gemini-1.5-pro"
+SQL_MODEL     = "gemini-2.0-flash"
 CHAT_MODEL    = "gemini-2.0-flash"
 INSIGHT_MODEL = "gemini-2.0-flash"
 
@@ -66,7 +66,7 @@ def _ensure_database() -> None:
         return
     try:
         from generate_data import ingest_real_data
-        ingest_real_data(csv_path)
+        ingest_real_data(csv_filename=csv_path)
         print("[DB] Database generated successfully!")
     except Exception as exc:
         print(f"[DB] ERROR generating database: {exc}")
