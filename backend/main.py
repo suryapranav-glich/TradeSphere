@@ -47,6 +47,32 @@ app.add_middleware(
 DB_PATH = "marketing_campaigns.db"
 COLORS  = ["#6c63ff", "#00d4ff", "#ff6b6b", "#ffd93d", "#6bcb77", "#ff922b"]
 
+# ── Auto-generate DB on startup if missing (for Render deployment) ─────────────
+def _ensure_database() -> None:
+    """Build the SQLite DB from the committed CSV if the DB file is absent."""
+    if os.path.exists(DB_PATH):
+        print("[DB] marketing_campaigns.db found — ready.")
+        return
+    print("[DB] Database missing — generating from CSV...")
+    candidates = [
+        "../Nykaa_Digital_Marketing_Clean.csv.csv",
+        "Nykaa_Digital_Marketing_Clean.csv.csv",
+        "../Nykaa_Digital_Marketing_Clean.csv",
+        "Nykaa_Digital_Marketing_Clean.csv",
+    ]
+    csv_path = next((c for c in candidates if os.path.exists(c)), None)
+    if not csv_path:
+        print("[DB] WARNING: CSV file not found — starting without data.")
+        return
+    try:
+        from generate_data import ingest_real_data
+        ingest_real_data(csv_path)
+        print("[DB] Database generated successfully!")
+    except Exception as exc:
+        print(f"[DB] ERROR generating database: {exc}")
+
+_ensure_database()
+
 MONTH_MAP = {
     "january": "01", "february": "02", "march": "03", "april": "04",
     "may": "05", "june": "06", "july": "07", "august": "08",
